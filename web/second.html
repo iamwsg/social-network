@@ -1,0 +1,209 @@
+<!doctype html>
+<!-- saved from url=(0044)http://kenedict.com/networks/worldcup14/vis/ , thanks Andre!-->
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF8">
+  <title>Network | Static smooth curves - World Cup Network</title>
+
+  <script type="text/javascript" src="js/vis.js"></script>
+  <link type="text/css" rel="stylesheet" href="css/vis.css">
+
+  <!--<script src="js/WorldCup2014.js"></script>-->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+
+    <!--
+        <script type="text/javascript">
+            var edges,nodes;
+            /*
+            $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "test", "id": 1,}),dataType: "json",success: function(response)
+            {
+                edges=response.result.edges;
+                nodes=response.result.nodes;
+            },});*/
+
+            $(document).ready(function(){
+                $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "test", "id": 1,}),dataType: "json",success: function(response)
+                {
+                    edges=response.result.edges;
+                    nodes=response.result.nodes;
+                },});
+
+            });
+        </script>
+    -->
+
+
+
+
+      <style type="text/css">
+        #mynetwork {
+          width: 600px;
+          height: 600px;
+          border: 1px solid lightgray;
+        }
+      </style>
+
+    </head>
+
+    <body>
+
+    <h2> Social Network Analysis - CS512 Fall 2016 </h2>
+
+    <a href="newhtml.jsp" > Go Back</a>
+
+    <form name="form" id="myform" method="POST" action="">
+        <h3> Enter source and destination nodes numbers to get the shortest path via BFS algorithm.</h3>
+        Source Node Number <br>  <input type="number" name="sourceNode"><br>
+        Destination Node Number<br><input type="number" name="destNode"><br>
+        <button>Get Path</button>
+        <!-- <input type="submit" value="submit"> -->
+
+    </form>
+
+
+
+    <!--
+    <div style="width:700px; font-size:14px;">
+      After submitting we are running BFS from the given start vertex and calculating the diameter of the graph and comparing it with log Base2 of the number of vertices.
+      The complete graph is very computationally intensive to draw, Hence we have drawn only a subset of the whole dataset. here we have drawn around 1000 nodes and 10000 edges.
+      <br/><br/>
+      <br/><br/>
+    </div>
+    -->
+
+    <div id="mynetwork"></div>
+
+
+    <script type="text/javascript">
+      var network;
+      var edges={},nodes={};
+      var path={};
+
+      function redrawAll() {
+        // remove positoins
+          /*
+        for (var i = 0; i < nodes.length; i++) {
+          delete nodes[i].x;
+          delete nodes[i].y;
+        }*/
+          //nodes.clear;
+          //edges.clear;
+
+        // create a network
+        var container = document.getElementById('mynetwork');
+        var data = {
+          nodes: nodes,
+          edges: edges
+        };
+
+        var options = {
+          nodes: {
+            shape: 'dot',
+            scaling: {
+              min: 3,
+              max: 10
+            },
+            font: {
+              size: 12,
+              face: 'Tahoma'
+            }
+          },
+          edges: {
+            width: 0.15,
+            color: {inherit: 'from'},
+            smooth: {
+              type: 'continuous'
+            }
+          },
+
+          physics: {
+            stabilization: false,
+            barnesHut: {
+              gravitationalConstant: -80000,
+              springConstant: 0.001,
+              springLength: 200
+            }
+          },
+          interaction: {
+            tooltipDelay: 200,
+            hideEdgesOnDrag: true
+          }
+        };
+
+
+        //var options = {};
+
+        // Note: data is coming from ./datasources/WorldCup2014.js
+        network = new vis.Network(container, data, options);
+      }
+
+      function bfs() {
+          $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs", "id": 1,}),dataType: "json",success: function(response)
+          {
+              //alert("Button");
+              path=response.result;
+              path[0]['color']={color:'red'}; path[0]['Width']=3;
+              path[1]['color']={color:'red'}; path[1]['Width']=3;
+              path[2]['color']={color:'red'}; path[2]['Width']=3;
+              edges[edges.length]=path[0];
+              edges[edges.length]=path[1];
+              edges[edges.length]=path[2];
+              redrawAll();
+          },});
+      }
+
+
+      $(document).ready(function(){
+          $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "test", "id": 1,}),dataType: "json",success: function(response)
+          {
+              edges=response.result.edges;
+              nodes=response.result.nodes;
+
+              //edges[734]={from: 41483, to: 21776, color:{color:'red'}, width: 3};
+              //edges[739]={from: 45531, to: 21776, color:{color:'red'}, width: 3};
+              //edges[1045]={from: 60168, to: 45531, color:{color:'red'}, width: 3};
+
+              if(path.length>0) {
+                  for(var i=0; i<path.length;i++) {
+                      path[i]['color']={color:'red'}; path[i]['Width']=3;
+                      edges[edges.length]=path[i];
+                  }
+
+              }
+
+               //edges[edges.length]={from: 41483, to: 21776, color:{color:'red'}, width: 3};
+               //edges[edges.length]={from: 45531, to: 21776, color:{color:'red'}, width: 3};
+               //edges[edges.length]={from: 60168, to: 45531, color:{color:'red'}, width: 3};
+              alert("Ready");
+              redrawAll();
+          }});
+          //bfs();
+
+      });
+
+      $(document).ready(function(){
+          $("button").click(function(){
+              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs", "id": 1,}),dataType: "json",success: function(response)
+              {
+                  alert("Button");
+                  path=response.result;
+                  path[0]['color']={color:'red'}; path[0]['Width']=3;
+                  path[1]['color']={color:'red'}; path[1]['Width']=3;
+                  path[2]['color']={color:'red'}; path[2]['Width']=3;
+                  edges[edges.length]=path[0];
+                  edges[edges.length]=path[1];
+                  edges[edges.length]=path[2];
+                  redrawAll();
+              },});
+          });
+      });
+
+
+      //redrawAll()
+
+    </script>
+    </body>
+    </html>
