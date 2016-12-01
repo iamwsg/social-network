@@ -7,5 +7,7 @@ The PY folder contains Python files that would be run in json-rpc, while the web
 How to run?
 
 Step 1: install json-rpc (https://pypi.python.org/pypi/json-rpc);
+
 Step 2: run server.py in a console;
+
 Step 3: use Chrome to open second.html.
