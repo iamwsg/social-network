@@ -13,8 +13,7 @@ def foobar(**kwargs):
 def test():
     with open('wall.json') as json_data:
         d = json.load(json_data)
-        return d
-    
+        return d   
 
 @Request.application
 def application(request):

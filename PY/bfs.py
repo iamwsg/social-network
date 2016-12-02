@@ -5,7 +5,7 @@ import  random
 nodes = {}
 weight = {}
 
-def run():
+def run(source, target):
     with open('wall.json') as json_data:
 	d = json.load(json_data)
     jsonObj=d['edges']
@@ -13,13 +13,12 @@ def run():
     #jsonObj = json.loads(content)
     #source = jsonObj[random.randrange(0,len(jsonObj))]["from"]
     #target = jsonObj[random.randrange(0,len(jsonObj))]["from"]
-    source = 41483
-    target = 60168
+    #source = 41483
+    #target = 60168
     path = interface(jsonObj, None, source, target)
     print(source,target)
     print(path)
     return path
-
 
 def interface(edgeList, weightList, s, g, weighted = False):
     for n in range(0,len(edgeList)):
