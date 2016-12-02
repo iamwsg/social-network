@@ -36,8 +36,6 @@
     -->
 
 
-
-
       <style type="text/css">
         #mynetwork {
           width: 600px;
@@ -51,19 +49,27 @@
     <body>
 
     <h2> Social Network Analysis - CS512 Fall 2016 </h2>
+    <h3>Authors: Jiji Lu, Shuhan Wang, Zhenzhen Ge</h3>
 
-    <a href="newhtml.jsp" > Go Back</a>
+    <p>This application calculates the shortest paths of two nodes (persons) from the <a href="http://socialnetworks.mpi-sws.org/data-wosn2009.html">Facebook data.</a>  <br>
+    The following graph shows social network of people, with each node representing a person, and each edge the connectivity of two persons.<br>
+        We provide two methods of calculating the shortest paths of two persons, namely, the unweighted and the weighted method. <br>
+        The main contribution of this project is that we are able to extract the "weights" between two people based on their frequency of communications on the Facebook, <br>
+        which in some extend, represent the "familiarity" of two people. Therefore, the resulted shortest paths based on the weighted algorithm may have a better representation <br>
+        of the "distance" from people.
+    </p>
+
 
     <form name="form" id="myform" method="POST" action="">
-        <h3> Enter source and destination nodes numbers to get the shortest path via BFS algorithm.</h3>
-        Source Node Number <br>  <input type="number" name="sourceNode"><br>
-        Destination Node Number<br><input type="number" name="destNode"><br>
-        <button>Get Path</button>
-        <!-- <input type="submit" value="submit"> -->
+        <h3> Enter source and destination nodes numbers to get the shortest paths.</h3>
+        Source Node Number <br>  <input id="source" type="number" name="sourceNode" value="41483"><br>
+        Destination Node Number<br><input id="dest" type="number" name="destNode" value="60168"><br>
+        <input type="checkbox" name="weight" value="0"> Use Weighted Edge<br>
+
+        <!--<input type="submit" value="submit">-->
 
     </form>
-
-
+    <button>Get Path</button>
 
     <!--
     <div style="width:700px; font-size:14px;">
@@ -89,8 +95,8 @@
           delete nodes[i].x;
           delete nodes[i].y;
         }*/
-          //nodes.clear;
-          //edges.clear;
+          nodes.clear;
+          edges.clear;
 
         // create a network
         var container = document.getElementById('mynetwork');
@@ -141,63 +147,79 @@
       }
 
       function bfs() {
-          $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs", "id": 1,}),dataType: "json",success: function(response)
-          {
-              //alert("Button");
-              path=response.result;
-              path[0]['color']={color:'red'}; path[0]['Width']=3;
-              path[1]['color']={color:'red'}; path[1]['Width']=3;
-              path[2]['color']={color:'red'}; path[2]['Width']=3;
-              edges[edges.length]=path[0];
-              edges[edges.length]=path[1];
-              edges[edges.length]=path[2];
-              redrawAll();
-          },});
+          var src = Number(document.getElementById("source").value);
+          var des = Number(document.getElementById("dest").value);
+
+          try {
+              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs","params":[src,des], "id": 1,}),dataType: "json",success: function(response)
+              {
+                  //alert("Button");
+                  path=response.result;
+
+                  if(path.length>0) {
+                      for(var i=0; i<path.length; i++) {
+                          path[i]['color']={color:'red'};
+                          path[i]['width']=30;
+                          edges[edges.length]=path[i];
+                      }
+                  } else {
+                      alert("No path found!");
+                  }
+
+                  redrawAll();
+              },});
+          } catch(err) {
+              alert("Cannot receive data!");
+          }
+
+      }
+
+      function getData() {
+          try {
+              $.ajax({url: "http://localhost:4000/jsonrpc",
+                  type: "POST",
+                  contentType: "application/json",
+                  data: JSON.stringify({"jsonrpc": "2.0","method": "test", "id": 1,}),
+                  dataType: "json",
+                  success: function(response)
+                  {
+                      edges=response.result.edges;
+                      nodes=response.result.nodes;
+
+                      if(path.length>0) {
+                          for(var i=0; i<path.length;i++) {
+                              path[i]['color']={color:'red'}; path[i]['Width']=3;
+                              edges[edges.length]=path[i];
+                          }
+
+                      }
+
+                      //alert("Ready");
+                      redrawAll();
+                  },
+                  error: function(xhr, status, error){
+                      alert("Request Data Error!");
+                  },
+              });
+
+          } catch(err) {
+              alert("Cannot receive data!");
+          }
+
       }
 
 
+
       $(document).ready(function(){
-          $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "test", "id": 1,}),dataType: "json",success: function(response)
-          {
-              edges=response.result.edges;
-              nodes=response.result.nodes;
-
-              //edges[734]={from: 41483, to: 21776, color:{color:'red'}, width: 3};
-              //edges[739]={from: 45531, to: 21776, color:{color:'red'}, width: 3};
-              //edges[1045]={from: 60168, to: 45531, color:{color:'red'}, width: 3};
-
-              if(path.length>0) {
-                  for(var i=0; i<path.length;i++) {
-                      path[i]['color']={color:'red'}; path[i]['Width']=3;
-                      edges[edges.length]=path[i];
-                  }
-
-              }
-
-               //edges[edges.length]={from: 41483, to: 21776, color:{color:'red'}, width: 3};
-               //edges[edges.length]={from: 45531, to: 21776, color:{color:'red'}, width: 3};
-               //edges[edges.length]={from: 60168, to: 45531, color:{color:'red'}, width: 3};
-              alert("Ready");
-              redrawAll();
-          }});
-          //bfs();
+          getData();
 
       });
 
+
       $(document).ready(function(){
           $("button").click(function(){
-              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs", "id": 1,}),dataType: "json",success: function(response)
-              {
-                  alert("Button");
-                  path=response.result;
-                  path[0]['color']={color:'red'}; path[0]['Width']=3;
-                  path[1]['color']={color:'red'}; path[1]['Width']=3;
-                  path[2]['color']={color:'red'}; path[2]['Width']=3;
-                  edges[edges.length]=path[0];
-                  edges[edges.length]=path[1];
-                  edges[edges.length]=path[2];
-                  redrawAll();
-              },});
+              //getData();
+              bfs();
           });
       });
 
