@@ -76,6 +76,9 @@
     <form name="outputForm" >
         <output id="path" name="path" value="N/A">Path:</output>
     </form>
+    <form name="outputForm" >
+        <output id="pathWeight" name="pathWeight" value="N/A">Weight:</output>
+    </form>
 
 
 
@@ -137,8 +140,8 @@
           physics: {
             stabilization: false,
             barnesHut: {
-              gravitationalConstant: -8000,
-              springConstant: 0.0001,
+              gravitationalConstant: -80000,
+              springConstant: 0.001,
               springLength: 200
             }
           },
@@ -173,17 +176,18 @@
                       } else {
                           cl='green';
                       }
-                      for(var i=0; i<path.length; i++) {
+                      for(var i=0; i<path.length-1; i++) {
                           path[i]['color']={color:cl};
                           path[i]['width']=30;
                           edges[edges.length]=path[i];
                           out=out+" {"+"from: "+path[i]["from"].toString()+" to: "+path[i]["to"].toString()+"}";
                       }
+                      //out = out + "Weight: " + path[path.length-1]["weight"].toString();
                       document.getElementById("path").value=out;
                   } else {
                       alert("No path found!");
                   }
-
+                  document.getElementById("pathWeight").value="Weight: "+ path[path.length-1]["weight"].toString();
                   redrawAll();
               },
                   error: function(xhr, status, error){
@@ -275,7 +279,7 @@
                       } else {
                           cl='green';
                       }
-                      for(var i=0; i<path.length; i++) {
+                      for(var i=0; i<path.length-1; i++) {
                           path[i]['color']={color:cl};
                           path[i]['width']=30;
                           edges[edges.length]=path[i];
@@ -285,7 +289,7 @@
                   } else {
                       alert("No path found!");
                   }
-
+                  document.getElementById("pathWeight").value="Weight: "+ path[path.length-1]["weight"].toString();
                   redrawAll();
               },
                   error: function(xhr, status, error){
