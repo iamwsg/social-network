@@ -106,6 +106,10 @@ def restore(adjList, weightList):
 def interface(edgeList, s, g, weighted = False):
     nodes, weightList = transform(edgeList)
     path = {}
+
+    if nodes.has_key(s) is False or nodes.has_key(g) is False:
+        return path
+    
     if weighted is True:
         path = dikstra(nodes,weightList, s, g)
     else:
