@@ -13,7 +13,6 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 
-
     <!--
         <script type="text/javascript">
             var edges,nodes;
@@ -62,14 +61,24 @@
 
     <form name="form" id="myform" method="POST" action="">
         <h3> Enter source and destination nodes numbers to get the shortest paths.</h3>
-        Source Node Number <br>  <input id="source" type="number" name="sourceNode" value="41483"><br>
-        Destination Node Number<br><input id="dest" type="number" name="destNode" value="60168"><br>
-        <input type="checkbox" name="weight" value="0"> Use Weighted Edge<br>
+        Source Node Number <br>  <input id="source" type="number" name="sourceNode" value="10144"><br>
+        Destination Node Number<br><input id="dest" type="number" name="destNode" value="5645"><br>
+        <input id="weight" type="checkbox" name="weight" value="0"> Use Weighted Edge<br>
 
         <!--<input type="submit" value="submit">-->
 
     </form>
-    <button>Get Path</button>
+    <button id="button2">Clean Net</button>
+    <button id="button1">Get Path</button>
+    <button id="button3">Feel Lucky</button>
+
+
+    <form name="outputForm" >
+        <output id="path" name="path" value="N/A">Path:</output>
+    </form>
+
+
+
 
     <!--
     <div style="width:700px; font-size:14px;">
@@ -128,8 +137,8 @@
           physics: {
             stabilization: false,
             barnesHut: {
-              gravitationalConstant: -80000,
-              springConstant: 0.001,
+              gravitationalConstant: -8000,
+              springConstant: 0.0001,
               springLength: 200
             }
           },
@@ -149,25 +158,37 @@
       function bfs() {
           var src = Number(document.getElementById("source").value);
           var des = Number(document.getElementById("dest").value);
+          var isWeighted = document.getElementById("weight").checked;
 
           try {
-              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs","params":[src,des], "id": 1,}),dataType: "json",success: function(response)
+              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs","params":[src,des,isWeighted], "id": 1,}),dataType: "json",success: function(response)
               {
                   //alert("Button");
                   path=response.result;
 
                   if(path.length>0) {
+                      var out="Path: ";
+                      if (isWeighted) {
+                          cl='maroon';
+                      } else {
+                          cl='green';
+                      }
                       for(var i=0; i<path.length; i++) {
-                          path[i]['color']={color:'red'};
+                          path[i]['color']={color:cl};
                           path[i]['width']=30;
                           edges[edges.length]=path[i];
+                          out=out+" {"+"from: "+path[i]["from"].toString()+" to: "+path[i]["to"].toString()+"}";
                       }
+                      document.getElementById("path").value=out;
                   } else {
                       alert("No path found!");
                   }
 
                   redrawAll();
-              },});
+              },
+                  error: function(xhr, status, error){
+                      alert("Request Data Error!");
+                  },});
           } catch(err) {
               alert("Cannot receive data!");
           }
@@ -208,6 +229,73 @@
 
       }
 
+      function clean() {
+          try {
+              $.ajax({url: "http://localhost:4000/jsonrpc",
+                  type: "POST",
+                  contentType: "application/json",
+                  data: JSON.stringify({"jsonrpc": "2.0","method": "clean", "id": 1,}),
+                  dataType: "json",
+                  success: function(response)
+                  {
+                      edges=response.result.edges;
+                      nodes=response.result.nodes;
+
+                      redrawAll();
+                  },
+                  error: function(xhr, status, error){
+                      alert("Request Data Error!");
+                  },
+              });
+
+          } catch(err) {
+              alert("Cannot receive data!");
+          }
+
+      }
+
+      function lucky() {
+          var src = nodes[Math.round(Math.random()*nodes.length)]["id"];
+          var des = nodes[Math.round(Math.random()*nodes.length)]["id"];
+          var isWeighted = document.getElementById("weight").checked;
+
+          document.getElementById("source").value = src;
+          document.getElementById("dest").value = des;
+
+          try {
+              $.ajax({url: "http://localhost:4000/jsonrpc", type: "POST", contentType: "application/json",data: JSON.stringify({"jsonrpc": "2.0","method": "bfs","params":[src,des,isWeighted], "id": 1,}),dataType: "json",success: function(response)
+              {
+                  //alert("Button");
+                  path=response.result;
+
+                  if(path.length>0) {
+                      var out="Path: ";
+                      if (isWeighted) {
+                          cl='maroon';
+                      } else {
+                          cl='green';
+                      }
+                      for(var i=0; i<path.length; i++) {
+                          path[i]['color']={color:cl};
+                          path[i]['width']=30;
+                          edges[edges.length]=path[i];
+                          out=out+" {"+"from: "+path[i]["from"].toString()+" to: "+path[i]["to"].toString()+"}";
+                      }
+                      document.getElementById("path").value=out;
+                  } else {
+                      alert("No path found!");
+                  }
+
+                  redrawAll();
+              },
+                  error: function(xhr, status, error){
+                      alert("Request Data Error!");
+                  },});
+          } catch(err) {
+              alert("Cannot receive data!");
+          }
+      }
+
 
 
       $(document).ready(function(){
@@ -217,9 +305,22 @@
 
 
       $(document).ready(function(){
-          $("button").click(function(){
+          $("#button1").click(function(){
               //getData();
+              //alert("Cannot find path!");
               bfs();
+          });
+      });
+
+      $(document).ready(function(){
+          $("#button2").click(function(){
+              clean();
+          });
+      });
+
+      $(document).ready(function(){
+          $("#button3").click(function(){
+              lucky();
           });
       });
 
