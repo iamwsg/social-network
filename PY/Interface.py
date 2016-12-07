@@ -111,23 +111,25 @@ def interface(edgeList, s, g, weighted = False):
         return path
     
     if weighted is True:
-        path = dikstra(nodes,weightList, s, g)
+ #       path = dikstra(nodes,weightList, s, g)
+        path, weight = dikstra(nodes,weightList, s, g)
     else:
-        path = bfs(nodes, s, g)
-
+ #       path = bfs(nodes, s, g)
+        path, weight = bfs(nodes, weightList, s, g)
     result = []
     for item in path.items():
         result.append({"from":item[0],"to":item[1]})
+    result.append({"weight":weight})
+ #   result["weight"] = weight;
     return result
 
-
-
-def bfs(data, source, target):
+def bfs(data, weightList, source, target):
     dist = {}
     dist[source] = 0
     queue = [source]
     pre = {}
     path = {}
+    path_dist = 0
     distribution = {}
     while len(queue) > 0:
         u = queue.pop(0)
@@ -143,13 +145,16 @@ def bfs(data, source, target):
                 dist[v] = dist_u + 1
                 queue.append(v)
                 pre[v] = u
+    for i in path.items():
+        path_dist += getWeight(weightList,i[0],i[1])
 
-    return path
+    return path, path_dist
 
 def dikstra(data, weightDic, source, target):
     dist = {}
     pre = {}
     path = {}
+    path_dist = 0
     for i in range(0, len(data)):
         dist[data.items()[i][0]] = float('inf')
     dist[source] = 0
@@ -158,17 +163,68 @@ def dikstra(data, weightDic, source, target):
     while len(queue.heap) > 1:
         u = queue.pop()
         if u == target:
+            path_dist = dist[u]
             while u != source:
                 v = pre[u]
                 path[u] = v
                 u = v
+            print path_dist
             break
         for v in data[u]:
             if dist[v] > dist[u] + getWeight(weightDic,u,v):
                 dist[v] = dist[u] + getWeight(weightDic,u,v)
                 queue.insert(v, dist[v])
                 pre[v] = u
-    return path
+    return path, path_dist
+
+
+##def bfs(data, source, target):
+##    dist = {}
+##    dist[source] = 0
+##    queue = [source]
+##    pre = {}
+##    path = {}
+##    distribution = {}
+##    while len(queue) > 0:
+##        u = queue.pop(0)
+##        dist_u = dist[u]
+##        if u == target:
+##            while u != source:
+##                v = pre[u]
+##                path[u] = v
+##                u = v
+##            break
+##        for v in data[u]:
+##            if v not in dist:
+##                dist[v] = dist_u + 1
+##                queue.append(v)
+##                pre[v] = u
+##
+##    return path
+##
+##def dikstra(data, weightDic, source, target):
+##    dist = {}
+##    pre = {}
+##    path = {}
+##    for i in range(0, len(data)):
+##        dist[data.items()[i][0]] = float('inf')
+##    dist[source] = 0
+##    queue = BinaryHeap()
+##    queue.insert(source, 0)
+##    while len(queue.heap) > 1:
+##        u = queue.pop()
+##        if u == target:
+##            while u != source:
+##                v = pre[u]
+##                path[u] = v
+##                u = v
+##            break
+##        for v in data[u]:
+##            if dist[v] > dist[u] + getWeight(weightDic,u,v):
+##                dist[v] = dist[u] + getWeight(weightDic,u,v)
+##                queue.insert(v, dist[v])
+##                pre[v] = u
+##    return path
 
 
 class BinaryHeap:
