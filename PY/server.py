@@ -3,17 +3,14 @@ from werkzeug.serving import run_simple
 
 from jsonrpc import JSONRPCResponseManager, dispatcher
 import json
-import bfs
+#import bfs
+import Interface
 
 
 @dispatcher.add_method
 def foobar(**kwargs):
     return kwargs["foo"] + kwargs["bar"]
-
-def test():
-    with open('wall.json') as json_data:
-        d = json.load(json_data)
-        return d   
+   
 
 @Request.application
 def application(request):
@@ -21,8 +18,10 @@ def application(request):
     dispatcher["echo"] = lambda s: s
     dispatcher["add"] = lambda a, b: a + b
     dispatcher["minus"] = lambda a, b: a - b
-    dispatcher["test"] = test
-    dispatcher["bfs"] = bfs.run
+    dispatcher["test"] = Interface.test
+    #dispatcher["bfs"] = bfs.run
+    dispatcher["bfs"] = Interface.run
+    dispatcher["clean"]= Interface.getLargestCC
 
     response = JSONRPCResponseManager.handle(
         request.data, dispatcher)
